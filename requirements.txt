@@ -1,9 +1,0 @@
-flask
-gunicorn
-requests
-beautifulsoup4
-pandas
-openpyxl
-selenium
-webdriver-manager
-openai
