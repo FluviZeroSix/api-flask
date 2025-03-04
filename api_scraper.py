@@ -9,26 +9,30 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.common.by import By
+from flask_cors import CORS
 
-# Configurações da API Flask
+# Configuração da API Flask
 app = Flask(__name__)
+CORS(app)  # Habilita CORS para permitir chamadas do navegador
 
 # Configuração da OpenAI
-OPENAI_API_KEY = "SUA_OPENAI_API_KEY"
+OPENAI_API_KEY = "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"
 client = openai.OpenAI(api_key=OPENAI_API_KEY)
 
 # Configuração do Google Custom Search
-GOOGLE_API_KEY = "SUA_GOOGLE_API_KEY"
-CSE_ID = "SEU_CSE_ID"
+GOOGLE_API_KEY = "AIzaSyAoGD39ieZeCHqM73ltYNbBms-NQUQo5xU"
+CSE_ID = "a6c5683482ef64641"
 
 def iniciar_driver():
-    """Inicializa o Selenium para acessar sites bloqueados como Instagram e Facebook."""
+    """Inicializa o Selenium com opções otimizadas para evitar bloqueios."""
     options = webdriver.ChromeOptions()
     options.add_argument("--headless")  # Para rodar sem abrir janela
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
-    
+    options.add_argument("--disable-blink-features=AutomationControlled")  # Reduz detecção como bot
+
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+    driver.set_page_load_timeout(10)  # Define um timeout de 10 segundos
     return driver
 
 def google_search(query, num_results=5):
@@ -39,37 +43,32 @@ def google_search(query, num_results=5):
     if response.status_code == 200:
         results = response.json()
         links = [item['link'] for item in results.get("items", [])]
+        print("🔎 Links encontrados:", links)  # Log para verificar os links
         return links
     else:
+        print("❌ Erro ao buscar no Google:", response.status_code, response.text)
         return []
 
 def scrape_website(url, driver):
     """Acessa o site e retorna seu conteúdo para análise."""
     try:
-        headers = {'User-Agent': 'Mozilla/5.0'}
-        if url.endswith(".pdf"):
-            return None, None
-
-        if "instagram.com" in url:
-            driver.get(url)
-            time.sleep(5)
-            try:
-                username = driver.current_url.split("instagram.com/")[-1].split("/")[0]
-                return None, f"@{username}"
-            except:
-                return None, None
-
+        print(f"🔎 Tentando acessar: {url}")  # Log para ver quais sites estão sendo acessados
         driver.get(url)
-        time.sleep(10)
-        return driver.page_source, None
-
-    except requests.exceptions.RequestException:
-        return None, None
+        time.sleep(5)
+        html_text = driver.page_source
+        print(f"✅ Página carregada com sucesso: {url}")
+        return html_text, None
+    except Exception as e:
+        print(f"❌ Erro ao acessar {url}, ignorando... Erro: {e}")
+        return None, None  # Ignora sites com erro
 
 def extract_data_with_gpt(site_url, html_text):
     """Usa o ChatGPT para extrair informações úteis do HTML."""
     if html_text is None:
+        print(f"Aviso: Nenhum HTML extraído de {site_url}")
         return {"nome_estabelecimento": "Não encontrado", "emails": [], "telefones": [], "nomes_pessoas": []}
+
+    print(f"📄 HTML recebido de {site_url}: {html_text[:500]}")  # Mostra os primeiros 500 caracteres do HTML
 
     prompt = f"""
     Extraia e organize as seguintes informações:
@@ -100,12 +99,21 @@ def extract_data_with_gpt(site_url, html_text):
         )
 
         refined_data = response.choices[0].message.content
+        print(f"🤖 Resposta do ChatGPT para {site_url}: {refined_data}")  # Exibe a resposta do ChatGPT
         return json.loads(refined_data)
 
     except json.JSONDecodeError:
+        print(f"❌ Erro ao converter resposta do ChatGPT em JSON para {site_url}")
         return None
-    except Exception:
+    except Exception as e:
+        print(f"❌ Erro no ChatGPT: {e}")
         return None
+
+
+@app.route('/', methods=['GET'])
+def home():
+    """Página inicial da API"""
+    return jsonify({"mensagem": "API está rodando! Use o endpoint /scrape para testar."})
 
 @app.route('/scrape', methods=['GET'])
 def scrape_api():
@@ -121,6 +129,11 @@ def scrape_api():
     dados_coletados = []
     for link in links:
         html_text, instagram_handle = scrape_website(link, driver)
+        
+        # Se não conseguir extrair dados, pula o site
+        if html_text is None:
+            continue
+
         refined_data = extract_data_with_gpt(link, html_text)
         
         if refined_data:
@@ -137,4 +150,4 @@ def scrape_api():
     return jsonify(dados_coletados)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=10000)
+    app.run(host='0.0.0.0', port=5000, debug=True)
