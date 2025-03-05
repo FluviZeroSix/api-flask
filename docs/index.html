@@ -99,7 +99,7 @@
             return;
         }
 
-        const apiUrl = "http://127.0.0.1:5000/scrape?query=" + encodeURIComponent(query);
+const apiUrl = "https://api-scraper.onrender.com/scrape?query=" + encodeURIComponent(query);
 
         fetch(apiUrl)
             .then(response => {
