@@ -1,123 +1,208 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Consulta de Empresas - API WebScraping</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <title>Consulta de Empresas</title>
     <style>
-        /* Fundo degradê azul */
+        /* Fundo e Layout */
         body {
-            background: linear-gradient(to right, #007bff, #66b2ff);
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background: linear-gradient(to bottom, #3A7BD5, #00A3E1);
+            margin: 0;
+            padding: 0;
+            position: relative;
+            display: flex;
+        }
+
+        /* Barra Lateral Expansível */
+        .sidebar {
+            width: 60px;
+            height: 100vh;
+            background-color: #003366;
+            color: white;
+            position: fixed;
+            top: 0;
+            left: 0;
+            overflow-x: hidden;
+            transition: width 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 20px;
+            z-index: 3;
+        }
+
+        .sidebar.expanded {
+            width: 400px; /* Expandida ao dobro do tamanho */
+        }
+
+        .toggle-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: white;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+
+        .menu {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+
+        .sidebar.expanded .menu {
+            display: flex;
+        }
+
+        .menu a {
+            color: white;
+            text-decoration: none;
+            font-size: 22px;
+            margin: 15px 0;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            width: 90%;
+            text-align: center;
+            transition: 0.3s;
+        }
+
+        .menu a:hover {
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        /* Container Principal */
+        .container {
+            margin: auto;
+            background: white;
+            padding: 50px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 800px;
+            height: 600px; /* Proporcional à largura */
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Logo Sinapse no topo */
+        .sinapse-logo {
+            width: 220px;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        /* Inputs */
+        input, button {
+            width: 95%;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 18px;
+        }
+
+        button {
+            background-color: #007BFF;
+            color: white;
+            font-size: 20px;
+            border: none;
+            cursor: pointer;
+            padding: 15px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Resultados */
+        #resultado {
+            margin-top: 20px;
+            background: #f1f1f1;
+            padding: 20px;
+            border-radius: 5px;
+            font-size: 18px;
+            width: 100%;
+            text-align: left;
+        }
+
+        /* Marca d'água GRANDE cobrindo 70% da tela */
+        .watermark {
+            position: fixed;
+            width: 70%;
+            max-width: 1200px;
+            opacity: 0.12;
+            bottom: 50%;
+            left: 50%;
+            transform: translate(-50%, 50%);
+            z-index: 1;
+        }
+
+        .main-content {
+            margin-left: 80px;
+            width: 100%;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            margin: 0;
+            min-height: 100vh;
         }
 
-        /* Caixa principal */
-        .container {
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-            text-align: center;
-            width: 100%;
-            max-width: 500px;
+        .sidebar.expanded + .main-content {
+            margin-left: 420px; /* Ajuste para corresponder ao tamanho expandido */
         }
 
-        /* Logo principal */
-        .logo {
-            width: 150px;
-            margin-bottom: 10px;
-        }
-
-        /* Input estilizado */
-        .form-control {
-            border-radius: 8px;
-            border: 1px solid #ccc;
-        }
-
-        /* Botão estilizado */
-        .btn-custom {
-            background: #007bff;
-            color: white;
-            border-radius: 8px;
-            font-size: 16px;
-            padding: 10px;
-        }
-
-        /* Caixa de resultado */
-        .result-box {
-            margin-top: 20px;
-            padding: 15px;
-            border-radius: 8px;
-            background: #e3f2fd;
-            display: none;
-        }
-
-        /* Logo no rodapé */
-        .footer-logo {
-            width: 80px;
-            margin-top: 20px;
-            opacity: 0.8;
-        }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <!-- Logo Principal -->
-    <img src="logo_horizontal_azul.svg" alt="Logo da Empresa" class="logo">
-
-    <h2 class="mb-3">🔎 Consulta de Empresas</h2>
-    <p class="text-muted">Busque empresas e obtenha contatos de forma rápida e eficiente.</p>
-
-    <!-- Campo de busca -->
-    <input type="text" id="query" class="form-control mb-3" placeholder="Digite o nome da empresa ou setor...">
-
-    <!-- Botão de busca -->
-    <button class="btn btn-custom w-100" id="buscarBtn">Buscar 🔍</button>
-
-    <!-- Resultado da Pesquisa -->
-    <div id="resultado" class="result-box">
-        <h4>📊 Resultado da Pesquisa</h4>
-        <pre id="dados"></pre>
+    <!-- Barra Lateral -->
+    <div class="sidebar">
+        <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+        <div class="menu">
+            <a href="index.html">Consultar Empresas</a>
+            <a href="tutorial.html">Como Consultar Empresas?</a>
+        </div>
     </div>
 
-    <!-- Logo no rodapé -->
-    <img src="logo_branca_cerebro.svg" alt="Logo Cérebro" class="footer-logo">
-</div>
+    <div class="main-content">
+        <div class="container">
+            <!-- Logo da Sinapse (Agora corrigida e carregando corretamente) -->
+            <img src="logo_horizontal_azul.svg" alt="Logo Sinapse" class="sinapse-logo">
+            
+            <h1>🔍 Consulta de Empresas</h1>
+            <p>Busque empresas e obtenha contatos de forma rápida e eficiente.</p>
 
-<script>
-    // Chama a API quando o usuário clica no botão
-    document.getElementById("buscarBtn").addEventListener("click", function () {
-        const query = document.getElementById("query").value;
-        if (!query) {
-            alert("Por favor, digite um termo de pesquisa!");
-            return;
+            <input type="text" id="searchQuery" placeholder="Digite o nome da empresa ou setor...">
+            <label for="resultCount">Número de resultados:</label>
+            <input type="number" id="resultCount" value="10" min="1" max="50">
+
+            <button onclick="buscarEmpresas()">Buscar 🔎</button>
+
+            <div id="resultado">
+                <h2>📊 Resultado da Pesquisa</h2>
+                <p id="mensagemErro"></p>
+                <ul id="listaResultados"></ul>
+            </div>
+        </div>
+    </div>
+
+    <img src="logo_cerebro_azul.svg" alt="Marca d'água" class="watermark">
+
+    <script>
+        function toggleSidebar() {
+            let sidebar = document.querySelector(".sidebar");
+            sidebar.classList.toggle("expanded");
+            document.querySelector(".main-content").classList.toggle("expanded");
         }
-
-const apiUrl = "https://api-scraper.onrender.com/scrape?query=" + encodeURIComponent(query);
-
-        fetch(apiUrl)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`Erro HTTP! Código: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                document.getElementById("resultado").style.display = "block";
-                document.getElementById("dados").textContent = JSON.stringify(data, null, 2);
-            })
-            .catch(error => {
-                document.getElementById("resultado").style.display = "block";
-                document.getElementById("dados").textContent = "Erro ao buscar dados: " + error.message;
-            });
-    });
-</script>
+    </script>
 
 </body>
 </html>
