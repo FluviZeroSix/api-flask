@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Como Consultar Empresas</title>
+    <style>
+        /* Fundo e Layout */
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background: linear-gradient(to bottom, #3A7BD5, #00A3E1);
+            margin: 0;
+            padding: 0;
+            position: relative;
+            display: flex;
+        }
+
+        /* Barra Lateral Expansível */
+        .sidebar {
+            width: 60px;
+            height: 100vh;
+            background-color: #003366;
+            color: white;
+            position: fixed;
+            top: 0;
+            left: 0;
+            overflow-x: hidden;
+            transition: width 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 20px;
+            z-index: 3;
+        }
+
+        .sidebar.expanded {
+            width: 200px;
+        }
+
+        .toggle-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: white;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+
+        .menu {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .sidebar.expanded .menu {
+            display: flex;
+        }
+
+        .menu a {
+            color: white;
+            text-decoration: none;
+            font-size: 18px;
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            width: 90%;
+            text-align: center;
+            transition: 0.3s;
+        }
+
+        .menu a:hover {
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        /* Container Principal */
+        .container {
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 600px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            position: relative;
+            z-index: 2;
+            text-align: left;
+        }
+
+        /* Logo Sinapse no topo */
+        .sinapse-logo {
+            width: 150px;
+            margin: 10px auto;
+            display: block;
+        }
+
+        /* Marca d'água grande e centralizada */
+        .watermark {
+            position: fixed;
+            width: 70%;
+            max-width: 800px;
+            opacity: 0.15;
+            bottom: 50%;
+            left: 50%;
+            transform: translate(-50%, 50%);
+            z-index: 1;
+        }
+
+        .main-content {
+            margin-left: 80px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .sidebar.expanded + .main-content {
+            margin-left: 220px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Barra Lateral -->
+    <div class="sidebar">
+        <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+        <div class="menu">
+            <a href="index.html">Consultar Empresas</a>
+            <a href="tutorial.html">Como Consultar Empresas?</a>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="container">
+            <!-- Logo da Sinapse no topo -->
+            <img src="logo_horizontal_azul.svg" alt="Logo Sinapse" class="sinapse-logo">
+            
+            <h1>📖 Como Consultar Empresas</h1>
+            <p>Bem-vindo à nossa plataforma! Aqui você pode buscar informações de contato de empresas de forma rápida e eficiente. Siga os passos abaixo para realizar sua consulta:</p>
+
+            <h2>Passo 1: Digite o Nome da Empresa ou Setor</h2>
+            <p>Utilize a barra de pesquisa para inserir o nome da empresa que deseja buscar ou um setor específico (por exemplo, "salão de beleza").</p>
+
+            <h2>Passo 2: Defina o Número de Resultados</h2>
+            <p>Escolha quantos resultados deseja visualizar para ter mais controle sobre a quantidade de informações retornadas.</p>
+
+            <h2>Passo 3: Clique no Botão "Buscar"</h2>
+            <p>Após preencher os campos, clique no botão azul "Buscar" e aguarde o processamento dos dados.</p>
+
+            <h2>Passo 4: Visualize os Resultados</h2>
+            <p>Abaixo do botão de busca, aparecerão os dados extraídos, como nome da empresa, telefone e e-mail para contato.</p>
+
+            <h3>Dicas Úteis</h3>
+            <ul>
+                <li>🔎 Caso não encontre a empresa desejada, tente pesquisar por palavras-chave diferentes.</li>
+                <li>📌 Se o número de resultados for muito grande, refine sua busca com um termo mais específico.</li>
+                <li>⚠️ As informações são extraídas automaticamente e podem variar dependendo da disponibilidade nos sites.</li>
+            </ul>
+
+            <p>Aproveite a plataforma para encontrar os contatos que precisa de forma ágil e organizada!</p>
+        </div>
+    </div>
+
+    <img src="logo_Cerebro_Azul.svg" alt="Marca d'água" class="watermark">
+
+    <script>
+        function toggleSidebar() {
+            let sidebar = document.querySelector(".sidebar");
+            sidebar.classList.toggle("expanded");
+            document.querySelector(".main-content").classList.toggle("expanded");
+        }
+    </script>
+
+</body>
+</html>
